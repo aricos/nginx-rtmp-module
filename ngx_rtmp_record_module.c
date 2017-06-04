@@ -11,6 +11,7 @@
 #include "ngx_rtmp_netcall_module.h"
 #include "ngx_rtmp_codec_module.h"
 #include "ngx_rtmp_record_module.h"
+#include <sys/timeb.h>
 
 
 ngx_rtmp_record_done_pt             ngx_rtmp_record_done;
@@ -456,7 +457,17 @@ ngx_rtmp_record_node_open(ngx_rtmp_session_t *s,
     ngx_memzero(rctx, sizeof(*rctx));
     rctx->conf = rracf;
     rctx->last = *ngx_cached_time;
-    rctx->timestamp = ngx_cached_time->sec;
+
+    struct timeb timer_msec;
+    long long int timestamp_msec; /* timestamp in millisecond. */
+    if (!ftime(&timer_msec)) {
+      timestamp_msec = ((long long int) timer_msec.time) * 1000ll +
+                          (long long int) timer_msec.millitm;
+    }
+    else {
+      timestamp_msec = -1;
+    }
+    rctx->timestamp = timestamp_msec; //ngx_cached_time->sec * 1000 + ngx_cached_time->msec / 1000;
 
     ngx_rtmp_record_make_path(s, rctx, &path);
 
@@ -843,6 +854,10 @@ ngx_rtmp_record_node_close(ngx_rtmp_session_t *s,
     ngx_rtmp_record_make_path(s, rctx, &v.path);
 
     rc = ngx_rtmp_record_done(s, &v);
+
+
+    ngx_log_debug1(NGX_LOG_DEBUG_RTMP, s->connection->log, 0,
+                   "record PATH: %V closed", &v.path);
 
     s->app_conf = app_conf;
 
