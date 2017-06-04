@@ -15,6 +15,7 @@
 
 
 ngx_rtmp_record_done_pt             ngx_rtmp_record_done;
+ngx_rtmp_start_record_pt            ngx_rtmp_start_record;
 
 
 static ngx_rtmp_publish_pt          next_publish;
@@ -443,6 +444,8 @@ ngx_rtmp_record_node_open(ngx_rtmp_session_t *s,
     u_char                      buf[8], *p;
     off_t                       file_size;
     uint32_t                    tag_size, mlen, timestamp;
+    ngx_rtmp_record_start_t      v;
+    ngx_int_t                   rc;
 
     rracf = rctx->conf;
     tag_size = 0;
@@ -470,6 +473,11 @@ ngx_rtmp_record_node_open(ngx_rtmp_session_t *s,
     rctx->timestamp = timestamp_msec; //ngx_cached_time->sec * 1000 + ngx_cached_time->msec / 1000;
 
     ngx_rtmp_record_make_path(s, rctx, &path);
+    v.recorder = rracf->id;
+    v.path = path;
+    // ngx_rtmp_record_make_path(s, rctx, &v.path);
+
+    rc = ngx_rtmp_start_record(s, &v);
 
     mode = rracf->append ? NGX_FILE_RDWR : NGX_FILE_WRONLY;
     create_mode = rracf->append ? NGX_FILE_CREATE_OR_OPEN : NGX_FILE_TRUNCATE;
@@ -1203,6 +1211,13 @@ ngx_rtmp_record_done_init(ngx_rtmp_session_t *s, ngx_rtmp_record_done_t *v)
 }
 
 
+static ngx_int_t
+ngx_rtmp_start_record_init(ngx_rtmp_session_t *s, ngx_rtmp_record_start_t *v)
+{
+    return NGX_OK;
+}
+
+
 static char *
 ngx_rtmp_record_recorder(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
@@ -1297,6 +1312,7 @@ ngx_rtmp_record_postconfiguration(ngx_conf_t *cf)
     ngx_rtmp_handler_pt                *h;
 
     ngx_rtmp_record_done = ngx_rtmp_record_done_init;
+    ngx_rtmp_start_record = ngx_rtmp_start_record_init;
 
     cmcf = ngx_rtmp_conf_get_module_main_conf(cf, ngx_rtmp_core_module);
 

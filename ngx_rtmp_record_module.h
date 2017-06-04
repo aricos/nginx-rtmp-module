@@ -82,12 +82,21 @@ typedef struct {
     ngx_str_t                           path;
 } ngx_rtmp_record_done_t;
 
+typedef struct {
+    ngx_str_t                           recorder;
+    ngx_str_t                           path;
+} ngx_rtmp_record_start_t;
+
 
 typedef ngx_int_t (*ngx_rtmp_record_done_pt)(ngx_rtmp_session_t *s,
         ngx_rtmp_record_done_t *v);
 
+typedef ngx_int_t (*ngx_rtmp_start_record_pt)(ngx_rtmp_session_t *s,
+        ngx_rtmp_record_start_t *v);
+
 
 extern ngx_rtmp_record_done_pt          ngx_rtmp_record_done;
+extern ngx_rtmp_start_record_pt         ngx_rtmp_start_record;
 
 
 extern ngx_module_t                     ngx_rtmp_record_module;
