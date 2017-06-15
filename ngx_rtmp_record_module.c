@@ -445,7 +445,7 @@ ngx_rtmp_record_node_open(ngx_rtmp_session_t *s,
     off_t                       file_size;
     uint32_t                    tag_size, mlen, timestamp;
     ngx_rtmp_record_start_t      v;
-    ngx_int_t                   rc;
+    // ngx_int_t                   rc;
 
     rracf = rctx->conf;
     tag_size = 0;
