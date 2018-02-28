@@ -769,6 +769,7 @@ ngx_rtmp_notify_record_start_create(ngx_rtmp_session_t *s, void *arg,
     args_len  = ngx_strlen(ctx->args);
 
     b = ngx_create_temp_buf(pool,
+                            sizeof("&time=") + sizeof(long long int) +
                             sizeof("&call=record_start") +
                             sizeof("&recorder=") + v->recorder.len +
                             sizeof("&name=") + name_len * 3 +
@@ -780,6 +781,9 @@ ngx_rtmp_notify_record_start_create(ngx_rtmp_session_t *s, void *arg,
 
     pl->buf = b;
     pl->next = NULL;
+
+    b->last = ngx_cpymem(b->last, (u_char*) "&time=", sizeof("&time=") - 1);
+    b->last = ngx_sprintf(b->last, "%ul", v->timestamp);
 
     b->last = ngx_cpymem(b->last, (u_char*) "&call=record_start",
                          sizeof("&call=record_start") - 1);
@@ -829,6 +833,7 @@ ngx_rtmp_notify_record_done_create(ngx_rtmp_session_t *s, void *arg,
     args_len  = ngx_strlen(ctx->args);
 
     b = ngx_create_temp_buf(pool,
+                            sizeof("&time=") + sizeof(long long int) +
                             sizeof("&call=record_done") +
                             sizeof("&recorder=") + v->recorder.len +
                             sizeof("&name=") + name_len * 3 +
@@ -841,6 +846,8 @@ ngx_rtmp_notify_record_done_create(ngx_rtmp_session_t *s, void *arg,
     pl->buf = b;
     pl->next = NULL;
 
+    b->last = ngx_cpymem(b->last, (u_char*) "&time=", sizeof("&time=") - 1);
+    b->last = ngx_sprintf(b->last, "%ul", v->timestamp);
     b->last = ngx_cpymem(b->last, (u_char*) "&call=record_done",
                          sizeof("&call=record_done") - 1);
 

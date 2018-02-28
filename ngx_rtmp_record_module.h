@@ -80,11 +80,13 @@ ngx_int_t ngx_rtmp_record_close(ngx_rtmp_session_t *s, ngx_uint_t n,
 typedef struct {
     ngx_str_t                           recorder;
     ngx_str_t                           path;
+    long long int                       timestamp;
 } ngx_rtmp_record_done_t;
 
 typedef struct {
     ngx_str_t                           recorder;
     ngx_str_t                           path;
+    long long int                       timestamp;
 } ngx_rtmp_record_start_t;
 
 

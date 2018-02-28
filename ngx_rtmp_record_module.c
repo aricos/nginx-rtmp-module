@@ -475,6 +475,7 @@ ngx_rtmp_record_node_open(ngx_rtmp_session_t *s,
     ngx_rtmp_record_make_path(s, rctx, &path);
     v.recorder = rracf->id;
     v.path = path;
+    v.timestamp = timestamp_msec;
     // ngx_rtmp_record_make_path(s, rctx, &v.path);
 
     ngx_rtmp_start_record(s, &v);
@@ -860,6 +861,18 @@ ngx_rtmp_record_node_close(ngx_rtmp_session_t *s,
 
     v.recorder = rracf->id;
     ngx_rtmp_record_make_path(s, rctx, &v.path);
+
+    struct timeb timer_msec;
+    long long int timestamp_msec; /* timestamp in millisecond. */
+    if (!ftime(&timer_msec)) {
+      timestamp_msec = ((long long int) timer_msec.time) * 1000ll +
+                          (long long int) timer_msec.millitm;
+    }
+    else {
+      timestamp_msec = -1;
+    }
+    
+    v.timestamp = timestamp_msec;
 
     rc = ngx_rtmp_record_done(s, &v);
 
