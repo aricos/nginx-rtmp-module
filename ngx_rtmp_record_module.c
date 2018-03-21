@@ -1060,7 +1060,8 @@ ngx_rtmp_record_node_av(ngx_rtmp_session_t *s, ngx_rtmp_record_rec_ctx_t *rctx,
     ngx_rtmp_header_t               ch;
     ngx_rtmp_codec_ctx_t           *codec_ctx;
     ngx_int_t                       keyframe, brkframe;
-    ngx_rtmp_record_app_conf_t     *rracf;
+    ngx_rtmp_record_app_conf_t     *rracf; 
+    Boolean                         video_keyframe_flag = false;
 
     rracf = rctx->conf;
 
@@ -1068,6 +1069,15 @@ ngx_rtmp_record_node_av(ngx_rtmp_session_t *s, ngx_rtmp_record_rec_ctx_t *rctx,
         ngx_rtmp_record_node_close(s, rctx);
         return NGX_OK;
     }
+
+    /* Add flag that keeps tracking video key frames
+    *  The goal here is to wait video key frame in order to start recording
+    */
+
+    if (!video_keyframe_flag) {
+      return NGX_OK;
+    }
+
 
     keyframe = (h->type == NGX_RTMP_MSG_VIDEO)
              ? (ngx_rtmp_get_video_frame_type(in) == NGX_RTMP_VIDEO_KEY_FRAME)
@@ -1182,6 +1192,7 @@ ngx_rtmp_record_node_av(ngx_rtmp_session_t *s, ngx_rtmp_record_rec_ctx_t *rctx,
     }
 
     if (h->type == NGX_RTMP_MSG_VIDEO) {
+
         if (codec_ctx && codec_ctx->video_codec_id == NGX_RTMP_VIDEO_H264 &&
             !rctx->avc_header_sent)
         {
@@ -1195,6 +1206,7 @@ ngx_rtmp_record_node_av(ngx_rtmp_session_t *s, ngx_rtmp_record_rec_ctx_t *rctx,
              !ngx_rtmp_is_codec_header(in)))
         {
             rctx->video_key_sent = 1;
+            video_keyframe_flag = true; 
         }
 
         if (!rctx->video_key_sent) {
