@@ -1061,7 +1061,7 @@ ngx_rtmp_record_node_av(ngx_rtmp_session_t *s, ngx_rtmp_record_rec_ctx_t *rctx,
     ngx_rtmp_codec_ctx_t           *codec_ctx;
     ngx_int_t                       keyframe, brkframe;
     ngx_rtmp_record_app_conf_t     *rracf; 
-    Boolean                         video_keyframe_flag = false;
+    int                             video_keyframe_flag = 0;
 
     rracf = rctx->conf;
 
@@ -1206,7 +1206,7 @@ ngx_rtmp_record_node_av(ngx_rtmp_session_t *s, ngx_rtmp_record_rec_ctx_t *rctx,
              !ngx_rtmp_is_codec_header(in)))
         {
             rctx->video_key_sent = 1;
-            video_keyframe_flag = true; 
+            video_keyframe_flag = 1; 
         }
 
         if (!rctx->video_key_sent) {
