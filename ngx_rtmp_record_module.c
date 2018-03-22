@@ -1074,15 +1074,20 @@ ngx_rtmp_record_node_av(ngx_rtmp_session_t *s, ngx_rtmp_record_rec_ctx_t *rctx,
     *  The goal here is to wait video key frame in order to start recording
     */
 
-    if (!video_keyframe_flag) {
-      return NGX_OK;
-    }
+    // if (!video_keyframe_flag) {
+    //   return NGX_OK;
+    // }
 
 
     keyframe = (h->type == NGX_RTMP_MSG_VIDEO)
              ? (ngx_rtmp_get_video_frame_type(in) == NGX_RTMP_VIDEO_KEY_FRAME)
              : 0;
 
+    if (keyframe != 0){
+      video_keyframe_flag = 1;
+    }
+
+    
     brkframe = (h->type == NGX_RTMP_MSG_VIDEO)
              ? keyframe
              : (rracf->flags & NGX_RTMP_RECORD_VIDEO) == 0;
@@ -1150,23 +1155,25 @@ ngx_rtmp_record_node_av(ngx_rtmp_session_t *s, ngx_rtmp_record_rec_ctx_t *rctx,
         ch = *h;
 
         /* AAC header */
-        if (!rctx->aac_header_sent && codec_ctx->aac_header &&
-           (rracf->flags & NGX_RTMP_RECORD_AUDIO))
-        {
-            ngx_log_debug1(NGX_LOG_DEBUG_RTMP, s->connection->log, 0,
-                           "record: %V writing AAC header", &rracf->id);
+        if (video_keyframe_flag){
+          if (!rctx->aac_header_sent && codec_ctx->aac_header &&
+             (rracf->flags & NGX_RTMP_RECORD_AUDIO))
+          {
+              ngx_log_debug1(NGX_LOG_DEBUG_RTMP, s->connection->log, 0,
+                             "record: %V writing AAC header", &rracf->id);
 
-            ch.type = NGX_RTMP_MSG_AUDIO;
-            ch.mlen = ngx_rtmp_record_get_chain_mlen(codec_ctx->aac_header);
+              ch.type = NGX_RTMP_MSG_AUDIO;
+              ch.mlen = ngx_rtmp_record_get_chain_mlen(codec_ctx->aac_header);
 
-            if (ngx_rtmp_record_write_frame(s, rctx, &ch,
-                                            codec_ctx->aac_header, 0)
-                != NGX_OK)
-            {
-                return NGX_OK;
-            }
+              if (ngx_rtmp_record_write_frame(s, rctx, &ch,
+                                              codec_ctx->aac_header, 0)
+                  != NGX_OK)
+              {
+                  return NGX_OK;
+              }
 
-            rctx->aac_header_sent = 1;
+              rctx->aac_header_sent = 1;
+          }
         }
 
         /* AVC header */
